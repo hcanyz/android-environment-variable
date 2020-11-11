@@ -1,6 +1,7 @@
 package com.hcanyz.environmentvariable
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.hcanyz.environmentvariable.base.VARIANT_PRESET_CUSTOMIZE
 import com.hcanyz.environmentvariable.base.VARIANT_PRESET_DEFAULT
 
@@ -52,46 +53,31 @@ class EvHolder(
     }
 
     private fun readVariantFromStorage(key: String): String? {
-        return context.getSharedPreferences(
-            context.packageName + ".environment_variable",
-            Context.MODE_PRIVATE
-        ).getString(
+        return sharedPreferences(context).getString(
             "$key.variant", ""
         )
     }
 
     private fun containsVariantFromStorage(key: String): Boolean {
-        return context.getSharedPreferences(
-            context.packageName + ".environment_variable",
-            Context.MODE_PRIVATE
-        ).contains(
+        return sharedPreferences(context).contains(
             "$key.variant"
         )
     }
 
     private fun readCustomizeValueFromStorage(key: String): String? {
-        return context.getSharedPreferences(
-            context.packageName + ".environment_variable",
-            Context.MODE_PRIVATE
-        ).getString(
+        return sharedPreferences(context).getString(
             "$key.customizeValue", ""
         )
     }
 
     private fun containsCustomizeValueFromStorage(key: String): Boolean {
-        return context.getSharedPreferences(
-            context.packageName + ".environment_variable",
-            Context.MODE_PRIVATE
-        ).contains(
+        return sharedPreferences(context).contains(
             "$key.customizeValue"
         )
     }
 
     private fun commitVariantToStorage(key: String, variant: String) {
-        context.getSharedPreferences(
-            context.packageName + ".environment_variable",
-            Context.MODE_PRIVATE
-        ).edit()
+        sharedPreferences(context).edit()
             .putString("$key.variant", variant)
             .apply()
     }
@@ -101,11 +87,15 @@ class EvHolder(
         key: String,
         value: String
     ) {
-        context.getSharedPreferences(
-            context.packageName + ".environment_variable",
-            Context.MODE_PRIVATE
-        ).edit()
+        sharedPreferences(context).edit()
             .putString("$key.customizeValue", value)
             .apply()
+    }
+
+    private fun sharedPreferences(context: Context): SharedPreferences {
+        return context.getSharedPreferences(
+            context.packageName + ".environment_variable",
+            Context.MODE_PRIVATE
+        )
     }
 }
