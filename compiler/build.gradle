@@ -1,0 +1,14 @@
+import org.gradle.internal.jvm.Jvm
+
+apply plugin: 'java-library'
+
+dependencies {
+    api project(':base')
+    api 'com.squareup:javapoet:1.12.1'
+
+    compileOnly files(Jvm.current().getToolsJar())
+
+    //noinspection AnnotationProcessorOnCompilePath
+    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc6'
+}
