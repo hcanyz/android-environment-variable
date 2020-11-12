@@ -2,8 +2,8 @@ package com.hcanyz.environmentvariable
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.hcanyz.environmentvariable.base.VARIANT_PRESET_CUSTOMIZE
-import com.hcanyz.environmentvariable.base.VARIANT_PRESET_DEFAULT
+import com.hcanyz.environmentvariable.base.EV_VARIANT_PRESET_CUSTOMIZE
+import com.hcanyz.environmentvariable.base.EV_VARIANT_PRESET_DEFAULT
 
 class EvHolder(
     private val context: Context,
@@ -18,26 +18,26 @@ class EvHolder(
     }
 
     init {
-        currentVariantMap[key] = VARIANT_PRESET_DEFAULT
+        currentVariantMap[key] = EV_VARIANT_PRESET_DEFAULT
 
         if (containsVariantFromStorage(key)) {
             val currentVariant = readVariantFromStorage(key)
-            currentVariantMap[key] = currentVariant ?: VARIANT_PRESET_DEFAULT
+            currentVariantMap[key] = currentVariant ?: EV_VARIANT_PRESET_DEFAULT
         }
         if (containsCustomizeValueFromStorage(key)) {
-            variantValueMap[joinVariantValueKey(key, VARIANT_PRESET_CUSTOMIZE)] =
+            variantValueMap[joinVariantValueKey(key, EV_VARIANT_PRESET_CUSTOMIZE)] =
                 readCustomizeValueFromStorage(key)
         }
     }
 
     fun currentVariant(): String {
-        return currentVariantMap[key] ?: return VARIANT_PRESET_DEFAULT
+        return currentVariantMap[key] ?: return EV_VARIANT_PRESET_DEFAULT
     }
 
     fun currentVariantValue(): String? {
         val currentVariant: String = currentVariant()
         val value: String? = variantValueMap[joinVariantValueKey(key, currentVariant)]
-        if (currentVariant != VARIANT_PRESET_CUSTOMIZE && value == null) {
+        if (currentVariant != EV_VARIANT_PRESET_CUSTOMIZE && value == null) {
             throw IllegalStateException("error variant value")
         }
         return value
@@ -46,8 +46,8 @@ class EvHolder(
     fun changeVariant(variant: String) {
         var variantFinal = variant
         val value: String? = variantValueMap[joinVariantValueKey(key, variantFinal)]
-        if (variantFinal != VARIANT_PRESET_CUSTOMIZE && value == null) {
-            variantFinal = VARIANT_PRESET_DEFAULT
+        if (variantFinal != EV_VARIANT_PRESET_CUSTOMIZE && value == null) {
+            variantFinal = EV_VARIANT_PRESET_DEFAULT
         }
 
         currentVariantMap[key] = variantFinal
@@ -55,7 +55,7 @@ class EvHolder(
     }
 
     fun changeVariantToCustomize(customizeValue: String) {
-        currentVariantMap[key] = VARIANT_PRESET_CUSTOMIZE
+        currentVariantMap[key] = EV_VARIANT_PRESET_CUSTOMIZE
         commitCustomizeValueToStorage(context, key, customizeValue)
     }
 

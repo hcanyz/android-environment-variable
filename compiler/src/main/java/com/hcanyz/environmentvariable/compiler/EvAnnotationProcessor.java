@@ -82,20 +82,25 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .classBuilder(evGroupInfo.name + "Manager")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
+        classBuilder.addField(FieldSpec.builder(String.class, "EV_GROUP_NAME",
+                Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer("$S", evGroupInfo.name)
+                .build());
+
         // static constant
         for (EvGroupInfo.EvItemInfo evItemInfo : evGroupInfo.evItemInfos) {
             String itemNameUpperCase = evItemInfo.name.toUpperCase();
-            classBuilder.addField(FieldSpec.builder(String.class, "KEY_" + itemNameUpperCase,
+            classBuilder.addField(FieldSpec.builder(String.class, "EV_ITEM_" + itemNameUpperCase,
                     Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                     .initializer("$S", evItemInfo.name)
                     .build());
 
             for (EvGroupInfo.EvVariantInfo evVariantInfo : evItemInfo.evVariantInfos) {
-                if (evVariantInfo.name.equals(ConstantKt.VARIANT_PRESET_CUSTOMIZE)) {
+                if (evVariantInfo.name.equals(ConstantKt.EV_VARIANT_PRESET_CUSTOMIZE)) {
                     continue;
                 }
                 String variantNameUpperCase = evVariantInfo.name.toUpperCase();
-                classBuilder.addField(FieldSpec.builder(String.class, "VARIANT_" + itemNameUpperCase + "_" + variantNameUpperCase,
+                classBuilder.addField(FieldSpec.builder(String.class, "EV_VARIANT_" + itemNameUpperCase + "_" + variantNameUpperCase,
                         Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                         .initializer("$S", evVariantInfo.name)
                         .build());
@@ -135,7 +140,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
             String defaultValueFrom = "";
             String customizeValue = "";
             for (EvGroupInfo.EvVariantInfo evVariantInfo : evItemInfo.evVariantInfos) {
-                if (evVariantInfo.name.equals(ConstantKt.VARIANT_PRESET_CUSTOMIZE)) {
+                if (evVariantInfo.name.equals(ConstantKt.EV_VARIANT_PRESET_CUSTOMIZE)) {
                     customizeValue = evVariantInfo.value;
                     continue;
                 }
@@ -160,18 +165,18 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 } else {
                     printMessage(Diagnostic.Kind.ERROR, String.format("%s - evGroup defaultVariant invalid,   group:%s,item:%s,variant:%s", TAG, evGroupInfo.name, evItemInfo.name, evVariantInfo.name));
                 }
-                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(KEY_$L, VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariantInfo.value).build());
+                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariantInfo.value).build());
             }
 
             printMessage(Diagnostic.Kind.NOTE, String.format("%s - defaultValue:%s from:%s,  group:%s,item:%s", TAG, defaultValue, defaultValueFrom, evGroupInfo.name, evItemInfo.name));
 
-            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(KEY_$L, VARIANT_PRESET_DEFAULT), \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
-            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(KEY_$L, VARIANT_PRESET_CUSTOMIZE), \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
+            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_PRESET_DEFAULT), \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
+            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_PRESET_CUSTOMIZE), \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("\n").build());
         }
 
         // collect fullVariants CodeBlocks
-        fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(VARIANT_PRESET_DEFAULT);", "fullVariants").build());
+        fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(EV_VARIANT_PRESET_DEFAULT);", "fullVariants").build());
         for (String variant : fullVariantStrSet) {
             fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(\"$L\");", "fullVariants", variant).build());
         }
@@ -182,6 +187,16 @@ public class EvAnnotationProcessor extends AbstractProcessor {
 
         // block init default
         classBuilder.addInitializerBlock(CodeBlock.join(all, "\n"));
+
+        // method getEvItemCurrentValue
+        classBuilder.addMethod(MethodSpec.methodBuilder("getEvItemCurrentValue")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(ParameterSpec.builder(String.class, "key")
+                        .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
+                        .build())
+                .addCode(CodeBlock.builder().add("return $L.get(EvHolder.Companion.joinVariantValueKey(key, $L.get(key)));", "variantValueMap", "currentVariantMap").build())
+                .returns(String.class)
+                .build());
 
         // method getFullVariants
         classBuilder.addMethod(MethodSpec.methodBuilder("getFullVariants")
@@ -194,7 +209,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         List<CodeBlock> evHoldersCodeBlocks = new ArrayList<>();
         evHoldersCodeBlocks.add(CodeBlock.builder().add("List<EvHolder> evHolders = new $T<>();", ArrayList.class).build());
         for (EvGroupInfo.EvItemInfo evItemInfo : evGroupInfo.evItemInfos) {
-            evHoldersCodeBlocks.add(CodeBlock.builder().add("evHolders.add(new EvHolder(context, KEY_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
+            evHoldersCodeBlocks.add(CodeBlock.builder().add("evHolders.add(new EvHolder(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
                     .build());
         }
         evHoldersCodeBlocks.add(CodeBlock.builder().add("return evHolders;").build());
@@ -209,7 +224,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
 
         // final file
         JavaFile javaFile = JavaFile.builder(evGroupInfo.packageName, classBuilder.build())
-                .addStaticImport(ConstantKt.class, "VARIANT_PRESET_CUSTOMIZE", "VARIANT_PRESET_DEFAULT")
+                .addStaticImport(ConstantKt.class, "EV_VARIANT_PRESET_CUSTOMIZE", "EV_VARIANT_PRESET_DEFAULT")
                 .build();
 
         try {

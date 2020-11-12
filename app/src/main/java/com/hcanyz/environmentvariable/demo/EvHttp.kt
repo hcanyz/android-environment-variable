@@ -18,6 +18,9 @@ class EvHttp {
 
         @EvVariant(desc = "release server url")
         val release: String = "https://hcanyz.com"
+
+        @EvVariant(desc = "customize server url")
+        val _customize_: String = "http://172.16.53.1"
     }
 
     @EvItem(defaultVariant = "uat")
