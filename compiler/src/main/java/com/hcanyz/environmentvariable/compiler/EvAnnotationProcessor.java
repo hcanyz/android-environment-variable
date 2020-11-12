@@ -79,11 +79,30 @@ public class EvAnnotationProcessor extends AbstractProcessor {
     }
 
     private void generateEvFile(EvGroupInfo evGroupInfo) {
+        String evGroupName = evGroupInfo.name + "Manager";
         TypeSpec.Builder classBuilder = TypeSpec
-                .classBuilder(evGroupInfo.name + "Manager")
+                .classBuilder(evGroupName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addSuperinterface(ClassName.get(LIB_PACKAGE_NAME, "IEvManager"));
 
+        // private constructor
+        classBuilder.addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build());
+
+        // singleton instance
+        classBuilder.addType(TypeSpec.classBuilder("Inner")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addField(FieldSpec.builder(ClassName.get(evGroupInfo.packageName, evGroupName),
+                        "instance", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("new $L()", evGroupName).build())
+                .build());
+
+        classBuilder.addMethod(MethodSpec.methodBuilder("getSingleton")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(ClassName.get(evGroupInfo.packageName, evGroupName))
+                .addCode("return Inner.instance;")
+                .build());
+
+        // static constant group name
         classBuilder.addField(FieldSpec.builder(String.class, "EV_GROUP_NAME",
                 Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer("$S", evGroupInfo.name)
@@ -127,6 +146,12 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 Modifier.PRIVATE, Modifier.FINAL)
                 .addJavadoc("map-key: \"$$key\"")
                 .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
+                .build());
+
+        // evHolders
+        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHolder")), "evHolders",
+                Modifier.PRIVATE, Modifier.FINAL)
+                .initializer("new $T()", ParameterizedTypeName.get(ClassName.get(ArrayList.class), ClassName.get(LIB_PACKAGE_NAME, "EvHolder")))
                 .build());
 
         // fullVariantStrSet
@@ -211,11 +236,12 @@ public class EvAnnotationProcessor extends AbstractProcessor {
 
         // method getEvHolders
         List<CodeBlock> evHoldersCodeBlocks = new ArrayList<>();
-        evHoldersCodeBlocks.add(CodeBlock.builder().add("List<EvHolder> evHolders = new $T<>();", ArrayList.class).build());
+        evHoldersCodeBlocks.add(CodeBlock.builder().add("if (evHolders.isEmpty()) {").build());
         for (EvGroupInfo.EvItemInfo evItemInfo : evGroupInfo.evItemInfos) {
-            evHoldersCodeBlocks.add(CodeBlock.builder().add("evHolders.add(new EvHolder(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
+            evHoldersCodeBlocks.add(CodeBlock.builder().add("  evHolders.add(new EvHolder(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
                     .build());
         }
+        evHoldersCodeBlocks.add(CodeBlock.builder().add("}").build());
         evHoldersCodeBlocks.add(CodeBlock.builder().add("return evHolders;").build());
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvHolders")
                 .addModifiers(Modifier.PUBLIC)
