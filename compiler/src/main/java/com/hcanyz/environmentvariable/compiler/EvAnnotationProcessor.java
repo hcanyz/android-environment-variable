@@ -40,6 +40,7 @@ import javax.tools.Diagnostic;
 public class EvAnnotationProcessor extends AbstractProcessor {
 
     private static final String TAG = EvAnnotationProcessor.class.getSimpleName();
+    private static final String LIB_PACKAGE_NAME = "com.hcanyz.environmentvariable";
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
@@ -80,7 +81,8 @@ public class EvAnnotationProcessor extends AbstractProcessor {
     private void generateEvFile(EvGroupInfo evGroupInfo) {
         TypeSpec.Builder classBuilder = TypeSpec
                 .classBuilder(evGroupInfo.name + "Manager")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addSuperinterface(ClassName.get(LIB_PACKAGE_NAME, "IEvManager"));
 
         classBuilder.addField(FieldSpec.builder(String.class, "EV_GROUP_NAME",
                 Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
@@ -191,6 +193,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         // method getEvItemCurrentValue
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvItemCurrentValue")
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
                 .addParameter(ParameterSpec.builder(String.class, "key")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
@@ -201,6 +204,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         // method getFullVariants
         classBuilder.addMethod(MethodSpec.methodBuilder("getFullVariants")
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
                 .addCode(CodeBlock.builder().add("return $L;", "fullVariants").build())
                 .returns(ParameterizedTypeName.get(Set.class, String.class))
                 .build());
@@ -215,11 +219,12 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         evHoldersCodeBlocks.add(CodeBlock.builder().add("return evHolders;").build());
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvHolders")
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
                 .addParameter(ParameterSpec.builder(ClassName.get("android.content", "Context"), "context")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
                 .addCode(CodeBlock.join(evHoldersCodeBlocks, "\n"))
-                .returns(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get("com.hcanyz.environmentvariable", "EvHolder")))
+                .returns(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHolder")))
                 .build());
 
         // final file
