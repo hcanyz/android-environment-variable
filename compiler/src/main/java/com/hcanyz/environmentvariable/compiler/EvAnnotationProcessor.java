@@ -103,20 +103,20 @@ public class EvAnnotationProcessor extends AbstractProcessor {
 
         // fullVariants
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), "fullVariants",
-                Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                Modifier.PRIVATE, Modifier.FINAL)
                 .initializer("new $T()", ParameterizedTypeName.get(HashSet.class, String.class))
                 .build());
 
         // variantValueMap
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "variantValueMap",
-                Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                Modifier.PRIVATE, Modifier.FINAL)
                 .addJavadoc("map-key: \"$$key.$$variant\"")
                 .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
                 .build());
 
         // currentVariantMap
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "currentVariantMap",
-                Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                Modifier.PRIVATE, Modifier.FINAL)
                 .addJavadoc("map-key: \"$$key\"")
                 .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
                 .build());
@@ -159,13 +159,13 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 } else {
                     printMessage(Diagnostic.Kind.ERROR, String.format("%s - evGroup defaultVariant invalid,   group:%s,item:%s,variant:%s", TAG, evGroup.name, evItem.name, evVariant.name));
                 }
-                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(KEY_$L + \".\" + VARIANT_$L_$L, \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariant.value).build());
+                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(KEY_$L, VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariant.value).build());
             }
 
             printMessage(Diagnostic.Kind.NOTE, String.format("%s - defaultValue:%s from:%s,  group:%s,item:%s", TAG, defaultValue, defaultValueFrom, evGroup.name, evItem.name));
 
-            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(KEY_$L + \".\" + VARIANT_PRESET_DEFAULT, \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
-            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(KEY_$L + \".\" + VARIANT_PRESET_CUSTOMIZE, \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
+            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(KEY_$L, VARIANT_PRESET_DEFAULT), \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
+            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(KEY_$L, VARIANT_PRESET_CUSTOMIZE), \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("\n").build());
         }
 
@@ -179,12 +179,12 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         all.add(CodeBlock.builder().add("\n").build());
         all.addAll(variantValueMapCodeBlocks);
 
-        // static block init default
-        classBuilder.addStaticBlock(CodeBlock.join(all, "\n"));
+        // block init default
+        classBuilder.addInitializerBlock(CodeBlock.join(all, "\n"));
 
         // method getFullVariants
         classBuilder.addMethod(MethodSpec.methodBuilder("getFullVariants")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addModifiers(Modifier.PUBLIC)
                 .addCode(CodeBlock.builder().add("return $L;", "fullVariants").build())
                 .returns(ParameterizedTypeName.get(Set.class, String.class))
                 .build());
@@ -198,7 +198,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         }
         evHoldersCodeBlocks.add(CodeBlock.builder().add("return evHolders;").build());
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvHolders")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addModifiers(Modifier.PUBLIC)
                 .addParameter(ParameterSpec.builder(ClassName.get("android.content", "Context"), "context")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())

@@ -11,6 +11,12 @@ class EvHolder(
     private val currentVariantMap: MutableMap<String, String>,
     private val variantValueMap: MutableMap<String, String?>
 ) {
+    companion object {
+        fun joinVariantValueKey(key: String, variant: String): String {
+            return "$key.$variant"
+        }
+    }
+
     init {
         currentVariantMap[key] = VARIANT_PRESET_DEFAULT
 
@@ -19,7 +25,8 @@ class EvHolder(
             currentVariantMap[key] = currentVariant ?: VARIANT_PRESET_DEFAULT
         }
         if (containsCustomizeValueFromStorage(key)) {
-            variantValueMap["$key.$VARIANT_PRESET_CUSTOMIZE"] = readCustomizeValueFromStorage(key)
+            variantValueMap[joinVariantValueKey(key, VARIANT_PRESET_CUSTOMIZE)] =
+                readCustomizeValueFromStorage(key)
         }
     }
 
@@ -29,7 +36,7 @@ class EvHolder(
 
     fun currentVariantValue(): String? {
         val currentVariant: String = currentVariant()
-        val value: String? = variantValueMap[currentVariant]
+        val value: String? = variantValueMap[joinVariantValueKey(key, currentVariant)]
         if (currentVariant != VARIANT_PRESET_CUSTOMIZE && value == null) {
             throw IllegalStateException("error variant value")
         }
@@ -38,7 +45,7 @@ class EvHolder(
 
     fun changeVariant(variant: String) {
         var variantFinal = variant
-        val value: String? = variantValueMap[variantFinal]
+        val value: String? = variantValueMap[joinVariantValueKey(key, variantFinal)]
         if (variantFinal != VARIANT_PRESET_CUSTOMIZE && value == null) {
             variantFinal = VARIANT_PRESET_DEFAULT
         }
