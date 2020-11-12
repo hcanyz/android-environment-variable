@@ -3,18 +3,20 @@ package com.hcanyz.environmentvariable.compiler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EvInfo {
+public class EvGroup {
     public String name;
     public String packageName;
+    public String defaultVariant;
     public final List<EvItem> evItems = new ArrayList<>();
 
-    public EvInfo(String name, String packageName) {
+    public EvGroup(String name, String packageName) {
         this.name = name;
         this.packageName = packageName;
     }
 
     public static class EvItem {
         public String name;
+        public String defaultVariant;
         public final List<EvVariant> evVariants = new ArrayList<>();
 
         public EvItem(String name) {

@@ -4,13 +4,13 @@ import com.hcanyz.environmentvariable.base.annotations.EvGroup
 import com.hcanyz.environmentvariable.base.annotations.EvItem
 import com.hcanyz.environmentvariable.base.annotations.EvVariant
 
-@EvGroup
+@EvGroup(defaultVariant = BuildConfig.EV_VARIANT)
 class EvHttp {
 
     @EvItem
     class ServerUrl {
 
-        @EvVariant(isDefault = true, desc = "dev server url")
+        @EvVariant(desc = "dev server url")
         val dev: String = "https://dev.hcanyz.com"
 
         @EvVariant(desc = "uat server url")
@@ -20,10 +20,10 @@ class EvHttp {
         val release: String = "https://hcanyz.com"
     }
 
-    @EvItem
+    @EvItem(defaultVariant = "uat")
     class H5BaseUrl {
 
-        @EvVariant(isDefault = true, desc = "h5 dev server url")
+        @EvVariant(desc = "h5 dev server url")
         val dev: String = "https://h5-dev.hcanyz.com"
 
         @EvVariant(desc = "h5 uat server url")

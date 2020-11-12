@@ -2,7 +2,6 @@ package com.hcanyz.environmentvariable.compiler;
 
 import com.google.auto.service.AutoService;
 import com.hcanyz.environmentvariable.base.ConstantKt;
-import com.hcanyz.environmentvariable.base.annotations.EvGroup;
 import com.hcanyz.environmentvariable.base.annotations.EvItem;
 import com.hcanyz.environmentvariable.base.annotations.EvVariant;
 import com.squareup.javapoet.ClassName;
@@ -65,32 +64,32 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         }
 
         // collect info
-        List<EvInfo> evInfos = new ArrayList<>();
+        List<EvGroup> evGroups = new ArrayList<>();
         for (Map.Entry<Symbol, Set<Symbol.ClassSymbol>> entry : groupMap.entrySet()) {
-            evInfos.add(collectEvInfo(entry.getKey(), entry.getValue()));
+            evGroups.add(collectEvGroup(entry.getKey(), entry.getValue()));
         }
 
         // generate file
-        for (EvInfo evInfo : evInfos) {
-            generateEvFile(evInfo);
+        for (EvGroup evGroup : evGroups) {
+            generateEvFile(evGroup);
         }
         return true;
     }
 
-    private void generateEvFile(EvInfo evInfo) {
+    private void generateEvFile(EvGroup evGroup) {
         TypeSpec.Builder classBuilder = TypeSpec
-                .classBuilder(evInfo.name + "Manager")
+                .classBuilder(evGroup.name + "Manager")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
         // static constant
-        for (EvInfo.EvItem evItem : evInfo.evItems) {
+        for (EvGroup.EvItem evItem : evGroup.evItems) {
             String itemNameUpperCase = evItem.name.toUpperCase();
             classBuilder.addField(FieldSpec.builder(String.class, "KEY_" + itemNameUpperCase,
                     Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                     .initializer("$S", evItem.name)
                     .build());
 
-            for (EvInfo.EvVariant evVariant : evItem.evVariants) {
+            for (EvGroup.EvVariant evVariant : evItem.evVariants) {
                 if (evVariant.name.equals(ConstantKt.VARIANT_PRESET_CUSTOMIZE)) {
                     continue;
                 }
@@ -122,32 +121,49 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
                 .build());
 
+        // fullVariantStrSet
+        Set<String> fullVariantStrSet = new LinkedHashSet<>();
+
         // collect variantValueMap CodeBlocks
         List<CodeBlock> fullVariantsCodeBlocks = new ArrayList<>();
         List<CodeBlock> variantValueMapCodeBlocks = new ArrayList<>();
 
-        Set<String> fullVariantStrSet = new LinkedHashSet<>();
-
-        for (EvInfo.EvItem evItem : evInfo.evItems) {
+        for (EvGroup.EvItem evItem : evGroup.evItems) {
             String itemNameUpperCase = evItem.name.toUpperCase();
             String defaultValue = "";
+            String defaultValueFrom = "";
             String customizeValue = "";
-            for (EvInfo.EvVariant evVariant : evItem.evVariants) {
-                fullVariantStrSet.add(evVariant.name);
-
-                String evVariantNameUpperCase = evVariant.name.toUpperCase();
-                if (evVariant.isDefault) {
-                    if (!defaultValue.isEmpty()) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, String.format("%s - already defined isDefault,   item:%s,variant:%s", TAG, evItem.name, evVariant.name));
-                    }
-                    defaultValue = evVariant.value;
-                }
+            for (EvGroup.EvVariant evVariant : evItem.evVariants) {
                 if (evVariant.name.equals(ConstantKt.VARIANT_PRESET_CUSTOMIZE)) {
                     customizeValue = evVariant.value;
                     continue;
                 }
+                fullVariantStrSet.add(evVariant.name);
+
+                String evVariantNameUpperCase = evVariant.name.toUpperCase();
+                // find every item default value
+                // The closer variant are, the more priority
+                if (evVariant.isDefault) {
+                    defaultValue = evVariant.value;
+                    defaultValueFrom = evVariant.name + " isDefault";
+                } else if (evItem.defaultVariant != null && !evItem.defaultVariant.isEmpty()) {
+                    if (evItem.defaultVariant.equals(evVariant.name)) {
+                        defaultValue = evVariant.value;
+                        defaultValueFrom = evItem.name + " annotation";
+                    }
+                } else if (evGroup.defaultVariant != null && !evGroup.defaultVariant.isEmpty()) {
+                    if (evGroup.defaultVariant.equals(evVariant.name)) {
+                        defaultValue = evVariant.value;
+                        defaultValueFrom = evGroup.name + " annotation";
+                    }
+                } else {
+                    printMessage(Diagnostic.Kind.ERROR, String.format("%s - evGroup defaultVariant invalid,   group:%s,item:%s,variant:%s", TAG, evGroup.name, evItem.name, evVariant.name));
+                }
                 variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(KEY_$L + \".\" + VARIANT_$L_$L, \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariant.value).build());
             }
+
+            printMessage(Diagnostic.Kind.NOTE, String.format("%s - defaultValue:%s from:%s,  group:%s,item:%s", TAG, defaultValue, defaultValueFrom, evGroup.name, evItem.name));
+
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(KEY_$L + \".\" + VARIANT_PRESET_DEFAULT, \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(KEY_$L + \".\" + VARIANT_PRESET_CUSTOMIZE, \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("\n").build());
@@ -156,9 +172,6 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         // collect fullVariants CodeBlocks
         fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(VARIANT_PRESET_DEFAULT);", "fullVariants").build());
         for (String variant : fullVariantStrSet) {
-            if (variant.equals(ConstantKt.VARIANT_PRESET_CUSTOMIZE)) {
-                continue;
-            }
             fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(\"$L\");", "fullVariants", variant).build());
         }
 
@@ -179,7 +192,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         // method getEvHolders
         List<CodeBlock> evHoldersCodeBlocks = new ArrayList<>();
         evHoldersCodeBlocks.add(CodeBlock.builder().add("List<EvHolder> evHolders = new $T<>();", ArrayList.class).build());
-        for (EvInfo.EvItem evItem : evInfo.evItems) {
+        for (EvGroup.EvItem evItem : evGroup.evItems) {
             evHoldersCodeBlocks.add(CodeBlock.builder().add("evHolders.add(new EvHolder(context, KEY_$L, currentVariantMap, variantValueMap));", evItem.name.toUpperCase())
                     .build());
         }
@@ -194,7 +207,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .build());
 
         // final file
-        JavaFile javaFile = JavaFile.builder(evInfo.packageName, classBuilder.build())
+        JavaFile javaFile = JavaFile.builder(evGroup.packageName, classBuilder.build())
                 .addStaticImport(ConstantKt.class, "VARIANT_PRESET_CUSTOMIZE", "VARIANT_PRESET_DEFAULT")
                 .build();
 
@@ -205,12 +218,19 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private EvInfo collectEvInfo(Symbol group, Set<Symbol.ClassSymbol> items) {
-        EvInfo evInfo = new EvInfo(group.name.toString(), group.packge().fullname.toString());
+    private EvGroup collectEvGroup(Symbol group, Set<Symbol.ClassSymbol> items) {
+        EvGroup evGroup = new EvGroup(group.name.toString(), group.packge().fullname.toString());
+
+        com.hcanyz.environmentvariable.base.annotations.EvGroup evGroupAnnotation = group.getAnnotation(com.hcanyz.environmentvariable.base.annotations.EvGroup.class);
+        evGroup.defaultVariant = evGroupAnnotation.defaultVariant();
+
         for (Symbol.ClassSymbol item : items) {
             String itemName = item.name.toString();
-            EvInfo.EvItem evItem = new EvInfo.EvItem(itemName);
-            evInfo.evItems.add(evItem);
+            EvGroup.EvItem evItem = new EvGroup.EvItem(itemName);
+            evGroup.evItems.add(evItem);
+
+            EvItem evItemAnnotation = item.getAnnotation(EvItem.class);
+            evItem.defaultVariant = evItemAnnotation.defaultVariant();
 
             List<? extends Element> variants = processingEnv.getElementUtils().getAllMembers(item);
             for (Element variantTmp : variants) {
@@ -218,7 +238,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                     continue;
                 }
                 if (!variantTmp.getModifiers().contains(Modifier.FINAL)) {
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, String.format("%s - not FINAL ignored,  item:%s,variant:%s", TAG, itemName, variantTmp.getSimpleName()));
+                    printMessage(Diagnostic.Kind.WARNING, String.format("%s - not FINAL ignored,  group:%s,item:%s,variant:%s", TAG, evGroup.name, itemName, variantTmp.getSimpleName()));
                     continue;
                 }
                 VariableElement variant = (VariableElement) variantTmp;
@@ -226,15 +246,19 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 String variantValue = variant.getConstantValue().toString();
                 EvVariant variantAnnotation = variant.getAnnotation(EvVariant.class);
 
-                evItem.evVariants.add(new EvInfo.EvVariant(variantName, variantValue, variantAnnotation.desc(), variantAnnotation.isDefault()));
+                evItem.evVariants.add(new EvGroup.EvVariant(variantName, variantValue, variantAnnotation.desc(), variantAnnotation.isDefault()));
             }
         }
-        return evInfo;
+        return evGroup;
+    }
+
+    private void printMessage(Diagnostic.Kind kind, CharSequence charSequence) {
+        processingEnv.getMessager().printMessage(kind, charSequence + "\r\n");
     }
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Collections.singleton(EvGroup.class.getCanonicalName());
+        return Collections.singleton(com.hcanyz.environmentvariable.base.annotations.EvGroup.class.getCanonicalName());
     }
 
     @Override

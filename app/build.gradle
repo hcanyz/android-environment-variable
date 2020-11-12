@@ -19,7 +19,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "EV_VARIANT", "\"dev\"")
+        }
+        uat {
+            buildConfigField("String", "EV_VARIANT", "\"uat\"")
+        }
         release {
+            buildConfigField("String", "EV_VARIANT", "\"release\"")
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
