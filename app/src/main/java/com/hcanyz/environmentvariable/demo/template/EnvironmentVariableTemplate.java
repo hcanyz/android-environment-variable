@@ -4,7 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import com.hcanyz.environmentvariable.EvHolder;
+import com.hcanyz.environmentvariable.EvHandler;
 import com.hcanyz.environmentvariable.IEvManager;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public final class EnvironmentVariableTemplate implements IEvManager {
      */
     private final Map<String, String> currentVariantMap = new HashMap<>();
 
-    private final List<EvHolder> evHolders = new ArrayList<>();
+    private final List<EvHandler> evHandlers = new ArrayList<>();
 
     {
         fullVariants.add(EV_VARIANT_PRESET_DEFAULT);
@@ -60,19 +60,19 @@ public final class EnvironmentVariableTemplate implements IEvManager {
         fullVariants.add("tmp");
 
 
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_DEV), "https://dev.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_UAT), "https://uat.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_RELEASE), "https://hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_PRESET_DEFAULT), "https://dev.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_PRESET_CUSTOMIZE), "http://172.16.53.1");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_DEV), "https://dev.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_UAT), "https://uat.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_RELEASE), "https://hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_PRESET_DEFAULT), "https://dev.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_PRESET_CUSTOMIZE), "http://172.16.53.1");
 
 
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_DEV), "https://h5-dev.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_UAT), "https://h5-uat.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_RELEASE), "https://h5.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_TMP), "https://h5-tmp.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_DEFAULT), "https://h5-uat.hcanyz.com");
-        variantValueMap.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_CUSTOMIZE), "");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_DEV), "https://h5-dev.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_UAT), "https://h5-uat.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_RELEASE), "https://h5.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_TMP), "https://h5-tmp.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_DEFAULT), "https://h5-uat.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_CUSTOMIZE), "");
 
     }
 
@@ -84,8 +84,9 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     }
 
     @Override
-    public String getEvItemCurrentValue(@NonNull String key) {
-        return variantValueMap.get(EvHolder.Companion.joinVariantValueKey(key, currentVariantMap.get(key)));
+    public String getEvItemCurrentValue(@NonNull String evItemName) {
+        //noinspection ConstantConditions
+        return variantValueMap.get(EvHandler.Companion.joinVariantValueKey(evItemName, currentVariantMap.get(evItemName)));
     }
 
     @Override
@@ -94,12 +95,12 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     }
 
     @Override
-    public List<EvHolder> getEvHolders(@NonNull Context context) {
-        if (evHolders.isEmpty()) {
-            evHolders.add(new EvHolder(context, EV_ITEM_SERVERURL, currentVariantMap, variantValueMap));
-            evHolders.add(new EvHolder(context, EV_ITEM_H5BASEURL, currentVariantMap, variantValueMap));
+    public List<EvHandler> getEvHandlers(@NonNull Context context) {
+        if (evHandlers.isEmpty()) {
+            evHandlers.add(new EvHandler(context, EV_ITEM_SERVERURL, currentVariantMap, variantValueMap));
+            evHandlers.add(new EvHandler(context, EV_ITEM_H5BASEURL, currentVariantMap, variantValueMap));
         }
-        return evHolders;
+        return evHandlers;
     }
 
     private static class Inner {

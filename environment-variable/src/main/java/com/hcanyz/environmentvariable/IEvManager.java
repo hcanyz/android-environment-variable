@@ -9,9 +9,9 @@ import java.util.Set;
 
 public interface IEvManager {
 
-    String getEvItemCurrentValue(@NonNull String key);
+    String getEvItemCurrentValue(@NonNull String evItemName);
 
     Set<String> getFullVariants();
 
-    List<EvHolder> getEvHolders(@NonNull Context context);
+    List<EvHandler> getEvHandlers(@NonNull Context context);
 }

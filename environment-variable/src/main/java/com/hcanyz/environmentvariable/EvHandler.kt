@@ -5,9 +5,9 @@ import android.content.SharedPreferences
 import com.hcanyz.environmentvariable.base.EV_VARIANT_PRESET_CUSTOMIZE
 import com.hcanyz.environmentvariable.base.EV_VARIANT_PRESET_DEFAULT
 
-class EvHolder(
+class EvHandler(
     private val context: Context,
-    private val key: String,
+    private val evItemName: String,
     private val currentVariantMap: MutableMap<String, String>,
     private val variantValueMap: MutableMap<String, String?>
 ) {
@@ -18,25 +18,25 @@ class EvHolder(
     }
 
     init {
-        currentVariantMap[key] = EV_VARIANT_PRESET_DEFAULT
+        currentVariantMap[evItemName] = EV_VARIANT_PRESET_DEFAULT
 
-        if (containsVariantFromStorage(key)) {
-            val currentVariant = readVariantFromStorage(key)
-            currentVariantMap[key] = currentVariant ?: EV_VARIANT_PRESET_DEFAULT
+        if (containsVariantFromStorage(evItemName)) {
+            val currentVariant = readVariantFromStorage(evItemName)
+            currentVariantMap[evItemName] = currentVariant ?: EV_VARIANT_PRESET_DEFAULT
         }
-        if (containsCustomizeValueFromStorage(key)) {
-            variantValueMap[joinVariantValueKey(key, EV_VARIANT_PRESET_CUSTOMIZE)] =
-                readCustomizeValueFromStorage(key)
+        if (containsCustomizeValueFromStorage(evItemName)) {
+            variantValueMap[joinVariantValueKey(evItemName, EV_VARIANT_PRESET_CUSTOMIZE)] =
+                readCustomizeValueFromStorage(evItemName)
         }
     }
 
     fun currentVariant(): String {
-        return currentVariantMap[key] ?: return EV_VARIANT_PRESET_DEFAULT
+        return currentVariantMap[evItemName] ?: return EV_VARIANT_PRESET_DEFAULT
     }
 
     fun currentVariantValue(): String? {
         val currentVariant: String = currentVariant()
-        val value: String? = variantValueMap[joinVariantValueKey(key, currentVariant)]
+        val value: String? = variantValueMap[joinVariantValueKey(evItemName, currentVariant)]
         if (currentVariant != EV_VARIANT_PRESET_CUSTOMIZE && value == null) {
             throw IllegalStateException("error variant value")
         }
@@ -45,18 +45,18 @@ class EvHolder(
 
     fun changeVariant(variant: String) {
         var variantFinal = variant
-        val value: String? = variantValueMap[joinVariantValueKey(key, variantFinal)]
+        val value: String? = variantValueMap[joinVariantValueKey(evItemName, variantFinal)]
         if (variantFinal != EV_VARIANT_PRESET_CUSTOMIZE && value == null) {
             variantFinal = EV_VARIANT_PRESET_DEFAULT
         }
 
-        currentVariantMap[key] = variantFinal
-        commitVariantToStorage(key, variantFinal)
+        currentVariantMap[evItemName] = variantFinal
+        commitVariantToStorage(evItemName, variantFinal)
     }
 
     fun changeVariantToCustomize(customizeValue: String) {
-        currentVariantMap[key] = EV_VARIANT_PRESET_CUSTOMIZE
-        commitCustomizeValueToStorage(context, key, customizeValue)
+        currentVariantMap[evItemName] = EV_VARIANT_PRESET_CUSTOMIZE
+        commitCustomizeValueToStorage(context, evItemName, customizeValue)
     }
 
     private fun readVariantFromStorage(key: String): String? {

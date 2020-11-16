@@ -137,21 +137,21 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         // variantValueMap
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "variantValueMap",
                 Modifier.PRIVATE, Modifier.FINAL)
-                .addJavadoc("map-key: \"$$key.$$variant\"")
+                .addJavadoc("map-key: \"$$evItemName.$$variant\"")
                 .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
                 .build());
 
         // currentVariantMap
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "currentVariantMap",
                 Modifier.PRIVATE, Modifier.FINAL)
-                .addJavadoc("map-key: \"$$key\"")
+                .addJavadoc("map-key: \"$$evItemName\"")
                 .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
                 .build());
 
-        // evHolders
-        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHolder")), "evHolders",
+        // EvHandlers
+        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")), "EvHandlers",
                 Modifier.PRIVATE, Modifier.FINAL)
-                .initializer("new $T()", ParameterizedTypeName.get(ClassName.get(ArrayList.class), ClassName.get(LIB_PACKAGE_NAME, "EvHolder")))
+                .initializer("new $T()", ParameterizedTypeName.get(ClassName.get(ArrayList.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")))
                 .build());
 
         // fullVariantStrSet
@@ -192,13 +192,13 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 } else {
                     printMessage(Diagnostic.Kind.ERROR, String.format("%s - evGroup defaultVariant invalid,   group:%s,item:%s,variant:%s", TAG, evGroupInfo.name, evItemInfo.name, evVariantInfo.name));
                 }
-                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariantInfo.value).build());
+                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariantInfo.value).build());
             }
 
             printMessage(Diagnostic.Kind.NOTE, String.format("%s - defaultValue:%s from:%s,  group:%s,item:%s", TAG, defaultValue, defaultValueFrom, evGroupInfo.name, evItemInfo.name));
 
-            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_PRESET_DEFAULT), \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
-            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHolder.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_PRESET_CUSTOMIZE), \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
+            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_PRESET_DEFAULT), \"$L\");", "variantValueMap", itemNameUpperCase, defaultValue).build());
+            variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_PRESET_CUSTOMIZE), \"$L\");", "variantValueMap", itemNameUpperCase, customizeValue).build());
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("\n").build());
         }
 
@@ -219,10 +219,10 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvItemCurrentValue")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
-                .addParameter(ParameterSpec.builder(String.class, "key")
+                .addParameter(ParameterSpec.builder(String.class, "evItemName")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
-                .addCode(CodeBlock.builder().add("return $L.get(EvHolder.Companion.joinVariantValueKey(key, $L.get(key)));", "variantValueMap", "currentVariantMap").build())
+                .addCode(CodeBlock.builder().add("return $L.get(EvHandler.Companion.joinVariantValueKey(evItemName, $L.get(evItemName)));", "variantValueMap", "currentVariantMap").build())
                 .returns(String.class)
                 .build());
 
@@ -234,23 +234,23 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .returns(ParameterizedTypeName.get(Set.class, String.class))
                 .build());
 
-        // method getEvHolders
-        List<CodeBlock> evHoldersCodeBlocks = new ArrayList<>();
-        evHoldersCodeBlocks.add(CodeBlock.builder().add("if (evHolders.isEmpty()) {").build());
+        // method getEvHandlers
+        List<CodeBlock> EvHandlersCodeBlocks = new ArrayList<>();
+        EvHandlersCodeBlocks.add(CodeBlock.builder().add("if (EvHandlers.isEmpty()) {").build());
         for (EvGroupInfo.EvItemInfo evItemInfo : evGroupInfo.evItemInfos) {
-            evHoldersCodeBlocks.add(CodeBlock.builder().add("  evHolders.add(new EvHolder(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
+            EvHandlersCodeBlocks.add(CodeBlock.builder().add("  EvHandlers.add(new EvHandler(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
                     .build());
         }
-        evHoldersCodeBlocks.add(CodeBlock.builder().add("}").build());
-        evHoldersCodeBlocks.add(CodeBlock.builder().add("return evHolders;").build());
-        classBuilder.addMethod(MethodSpec.methodBuilder("getEvHolders")
+        EvHandlersCodeBlocks.add(CodeBlock.builder().add("}").build());
+        EvHandlersCodeBlocks.add(CodeBlock.builder().add("return EvHandlers;").build());
+        classBuilder.addMethod(MethodSpec.methodBuilder("getEvHandlers")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
                 .addParameter(ParameterSpec.builder(ClassName.get("android.content", "Context"), "context")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
-                .addCode(CodeBlock.join(evHoldersCodeBlocks, "\n"))
-                .returns(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHolder")))
+                .addCode(CodeBlock.join(EvHandlersCodeBlocks, "\n"))
+                .returns(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")))
                 .build());
 
         // final file
