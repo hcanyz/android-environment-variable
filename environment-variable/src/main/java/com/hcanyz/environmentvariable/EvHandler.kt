@@ -30,6 +30,10 @@ class EvHandler(
         }
     }
 
+    fun evItemName(): String {
+        return evItemName
+    }
+
     fun currentVariant(): String {
         return currentVariantMap[evItemName] ?: return EV_VARIANT_PRESET_DEFAULT
     }
@@ -41,6 +45,11 @@ class EvHandler(
             throw IllegalStateException("error variant value")
         }
         return value
+    }
+
+    fun allVariantKvs(): Map<String, String?> {
+        return variantValueMap.filter { it.key.startsWith(evItemName) }
+            .mapKeys { it.key.substringAfter(".") }
     }
 
     fun changeVariant(variant: String) {

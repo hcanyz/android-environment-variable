@@ -18,8 +18,8 @@ import com.sun.tools.javac.code.Symbol;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         }
 
         // group by ev config file
-        Map<Symbol, Set<Symbol.ClassSymbol>> groupMap = new HashMap<>();
+        Map<Symbol, Set<Symbol.ClassSymbol>> groupMap = new LinkedHashMap<>();
         for (Element element : roundEnvironment.getElementsAnnotatedWith(EvItem.class)) {
             if (!(element instanceof Symbol.ClassSymbol)) {
                 continue;
@@ -138,14 +138,14 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "variantValueMap",
                 Modifier.PRIVATE, Modifier.FINAL)
                 .addJavadoc("map-key: \"$$evItemName.$$variant\"")
-                .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
+                .initializer("new $T()", ParameterizedTypeName.get(LinkedHashMap.class, String.class, String.class))
                 .build());
 
         // currentVariantMap
         classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "currentVariantMap",
                 Modifier.PRIVATE, Modifier.FINAL)
                 .addJavadoc("map-key: \"$$evItemName\"")
-                .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
+                .initializer("new $T()", ParameterizedTypeName.get(LinkedHashMap.class, String.class, String.class))
                 .build());
 
         // EvHandlers
