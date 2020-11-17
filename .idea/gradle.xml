@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/base" />
             <option value="$PROJECT_DIR$/compiler" />
             <option value="$PROJECT_DIR$/environment-variable" />
+            <option value="$PROJECT_DIR$/environment-variable-setting" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

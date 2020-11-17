@@ -1,3 +1,4 @@
+include ':environment-variable-setting'
 include ':compiler'
 include ':base'
 include ':environment-variable'

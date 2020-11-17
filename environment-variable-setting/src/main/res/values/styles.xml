@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.AppCompat.TextView.EvHeadLine">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/ev_color_gray</item>
+        <item name="android:padding">10dp</item>
+    </style>
+</resources>

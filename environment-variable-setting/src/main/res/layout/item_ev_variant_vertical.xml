@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="10dp"
+    tools:context=".ui.EvSwitchActivity">
+
+    <TextView
+        android:id="@+id/tv_ev_variant_name"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        tools:text="dev" />
+
+    <TextView
+        android:id="@+id/tv_ev_variant_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:paddingHorizontal="10dp"
+        android:textIsSelectable="true"
+        tools:text="dev value" />
+
+    <EditText
+        android:id="@+id/et_ev_variant_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="3"
+        android:paddingHorizontal="10dp"
+        android:textIsSelectable="true"
+        android:visibility="gone"
+        tools:text="dev value"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/iv_ev_variant_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:src="@drawable/ev_emo_im_yelling"
+        android:visibility="invisible"
+        tools:visibility="visible" />
+
+</LinearLayout>

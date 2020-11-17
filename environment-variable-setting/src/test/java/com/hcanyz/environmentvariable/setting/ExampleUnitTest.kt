@@ -1,4 +1,4 @@
-package com.hcanyz.environmentvariable
+package com.hcanyz.environmentvariable.setting
 
 import org.junit.Test
 
