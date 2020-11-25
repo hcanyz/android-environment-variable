@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/ev_item_bg"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingHorizontal="10dp"
@@ -16,33 +17,34 @@
         android:layout_marginEnd="5dp"
         tools:text="dev" />
 
-    <TextView
-        android:id="@+id/tv_ev_variant_value"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
         android:layout_weight="1"
-        android:ellipsize="end"
-        android:maxLines="3"
-        android:paddingHorizontal="10dp"
-        android:textIsSelectable="true"
-        tools:text="dev value" />
+        android:paddingHorizontal="10dp">
 
-    <EditText
-        android:id="@+id/et_ev_variant_value"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:maxLines="3"
-        android:paddingHorizontal="10dp"
-        android:textIsSelectable="true"
-        android:visibility="gone"
-        tools:text="dev value"
-        tools:visibility="visible" />
+        <TextView
+            android:id="@+id/tv_ev_variant_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:textIsSelectable="true"
+            tools:text="dev value" />
+
+        <EditText
+            android:id="@+id/et_ev_variant_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="3"
+            android:visibility="gone"
+            tools:text="dev value"
+            tools:visibility="visible" />
+
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/iv_ev_variant_selected"

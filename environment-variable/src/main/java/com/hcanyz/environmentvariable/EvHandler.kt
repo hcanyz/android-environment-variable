@@ -65,6 +65,8 @@ class EvHandler(
 
     fun changeVariantToCustomize(customizeValue: String) {
         currentVariantMap[evItemName] = EV_VARIANT_PRESET_CUSTOMIZE
+        variantValueMap[joinVariantValueKey(evItemName, EV_VARIANT_PRESET_CUSTOMIZE)] =
+            customizeValue
         commitCustomizeValueToStorage(context, evItemName, customizeValue)
     }
 
