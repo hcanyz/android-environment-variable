@@ -122,7 +122,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 }
                 String variantNameUpperCase = evVariantInfo.name.toUpperCase();
                 classBuilder.addField(FieldSpec.builder(String.class, "EV_VARIANT_" + itemNameUpperCase + "_" + variantNameUpperCase,
-                        Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
                         .initializer("$S", evVariantInfo.name)
                         .build());
             }

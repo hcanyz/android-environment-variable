@@ -106,7 +106,11 @@ class EvSwitchFragment : Fragment() {
                         }
                     }
                     mData.selected = true
-                    mData.evHandler.changeVariant(mData.variantName)
+                    if (mData.variantName == EV_VARIANT_PRESET_CUSTOMIZE) {
+                        mData.evHandler.changeVariantToCustomize(valueEt.text?.toString() ?: "")
+                    } else {
+                        mData.evHandler.changeVariant(mData.variantName)
+                    }
                     notifyDataSetChanged()
                 }
             }
@@ -120,15 +124,15 @@ class EvSwitchFragment : Fragment() {
                 }
 
                 override fun afterTextChanged(s: Editable?) {
-                    if (valueEt.hasFocus()) {
+                    if (valueEt.hasFocus() && mData.selected) {
                         mData.evHandler.changeVariantToCustomize(s.toString())
                     }
                 }
             })
             valueEt.setOnFocusChangeListener { v, hasFocus ->
-                val manager =
-                    mContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 if (!hasFocus) {
+                    val manager =
+                        mContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     manager.hideSoftInputFromWindow(v.windowToken, 0)
                 }
             }

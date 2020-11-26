@@ -13,6 +13,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setting(view: View) {
-        EvSwitchActivity.skip(view.context, arrayListOf(EvHttpManager::class.java))
+        EvSwitchActivity.skip(
+            view.context,
+            arrayListOf(EvHttpManager::class.java, Ev3rdPushInfoManager::class.java)
+        )
     }
 }
