@@ -128,10 +128,10 @@ public class EvAnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        // fullVariants
-        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), "fullVariants",
+        // intersectionVariants
+        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Set.class, String.class), "intersectionVariants",
                 Modifier.PRIVATE, Modifier.FINAL)
-                .initializer("new $T()", ParameterizedTypeName.get(HashSet.class, String.class))
+                .initializer("new $T()", ParameterizedTypeName.get(LinkedHashSet.class, String.class))
                 .build());
 
         // variantValueMap
@@ -154,11 +154,11 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .initializer("new $T()", ParameterizedTypeName.get(ClassName.get(ArrayList.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")))
                 .build());
 
-        // fullVariantStrSet
-        Set<String> fullVariantStrSet = new LinkedHashSet<>();
+        // intersectionVariantStrSet
+        LinkedHashMap<String, LinkedHashSet<String>> fullVariantStrMap = new LinkedHashMap<>();
 
         // collect variantValueMap CodeBlocks
-        List<CodeBlock> fullVariantsCodeBlocks = new ArrayList<>();
+        List<CodeBlock> intersectionVariantsCodeBlocks = new ArrayList<>();
         List<CodeBlock> variantValueMapCodeBlocks = new ArrayList<>();
 
         for (EvGroupInfo.EvItemInfo evItemInfo : evGroupInfo.evItemInfos) {
@@ -166,6 +166,10 @@ public class EvAnnotationProcessor extends AbstractProcessor {
             String defaultValue = "";
             String defaultValueFrom = "";
             String customizeValue = "";
+
+            LinkedHashSet<String> fullVariantStrSet = new LinkedHashSet<>();
+            fullVariantStrMap.put(evItemInfo.name, fullVariantStrSet);
+
             for (EvGroupInfo.EvVariantInfo evVariantInfo : evItemInfo.evVariantInfos) {
                 if (evVariantInfo.name.equals(ConstantKt.EV_VARIANT_PRESET_CUSTOMIZE)) {
                     customizeValue = evVariantInfo.value;
@@ -202,13 +206,24 @@ public class EvAnnotationProcessor extends AbstractProcessor {
             variantValueMapCodeBlocks.add(CodeBlock.builder().add("\n").build());
         }
 
-        // collect fullVariants CodeBlocks
-        fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(EV_VARIANT_PRESET_DEFAULT);", "fullVariants").build());
-        for (String variant : fullVariantStrSet) {
-            fullVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(\"$L\");", "fullVariants", variant).build());
+        Set<String> intersectionVariantStrSet = null;
+        for (LinkedHashSet<String> value : fullVariantStrMap.values()) {
+            if (intersectionVariantStrSet == null) {
+                intersectionVariantStrSet = value;
+            } else {
+                intersectionVariantStrSet.retainAll(value);
+            }
         }
 
-        List<CodeBlock> all = new ArrayList<>(fullVariantsCodeBlocks);
+        // collect intersectionVariants CodeBlocks
+        if (intersectionVariantStrSet != null) {
+            for (String variant : intersectionVariantStrSet) {
+                intersectionVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(\"$L\");", "intersectionVariants", variant).build());
+            }
+        }
+        intersectionVariantsCodeBlocks.add(CodeBlock.builder().add("$L.add(EV_VARIANT_PRESET_DEFAULT);", "intersectionVariants").build());
+
+        List<CodeBlock> all = new ArrayList<>(intersectionVariantsCodeBlocks);
         all.add(CodeBlock.builder().add("\n").build());
         all.addAll(variantValueMapCodeBlocks);
 
@@ -226,11 +241,11 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .returns(String.class)
                 .build());
 
-        // method getFullVariants
-        classBuilder.addMethod(MethodSpec.methodBuilder("getFullVariants")
+        // method getIntersectionVariants
+        classBuilder.addMethod(MethodSpec.methodBuilder("getIntersectionVariants")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
-                .addCode(CodeBlock.builder().add("return $L;", "fullVariants").build())
+                .addCode(CodeBlock.builder().add("return $L;", "intersectionVariants").build())
                 .returns(ParameterizedTypeName.get(Set.class, String.class))
                 .build());
 

@@ -11,7 +11,7 @@ public interface IEvManager {
 
     String getEvItemCurrentValue(@NonNull String evItemName);
 
-    Set<String> getFullVariants();
+    Set<String> getIntersectionVariants();
 
     List<EvHandler> getEvHandlers(@NonNull Context context);
 }

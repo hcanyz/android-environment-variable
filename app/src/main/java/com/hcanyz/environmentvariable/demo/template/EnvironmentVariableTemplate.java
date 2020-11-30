@@ -38,7 +38,7 @@ public final class EnvironmentVariableTemplate implements IEvManager {
 
     public static final String EV_VARIANT_H5BASEURL_TMP = "tmp";
 
-    private final Set<String> fullVariants = new HashSet<>();
+    private final Set<String> intersectionVariants = new HashSet<>();
 
     /**
      * map-key: "$key.$variant"
@@ -53,11 +53,11 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     private final List<EvHandler> evHandlers = new ArrayList<>();
 
     {
-        fullVariants.add(EV_VARIANT_PRESET_DEFAULT);
-        fullVariants.add("dev");
-        fullVariants.add("uat");
-        fullVariants.add("release");
-        fullVariants.add("tmp");
+        intersectionVariants.add(EV_VARIANT_PRESET_DEFAULT);
+        intersectionVariants.add("dev");
+        intersectionVariants.add("uat");
+        intersectionVariants.add("release");
+        intersectionVariants.add("tmp");
 
 
         variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_DEV), "https://dev.hcanyz.com");
@@ -90,8 +90,8 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     }
 
     @Override
-    public Set<String> getFullVariants() {
-        return fullVariants;
+    public Set<String> getIntersectionVariants() {
+        return intersectionVariants;
     }
 
     @Override

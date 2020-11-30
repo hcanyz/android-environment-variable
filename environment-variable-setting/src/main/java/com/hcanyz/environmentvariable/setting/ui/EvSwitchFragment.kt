@@ -10,12 +10,14 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.hcanyz.environmentvariable.EvHandler
 import com.hcanyz.environmentvariable.IEvManager
 import com.hcanyz.environmentvariable.base.EV_VARIANT_PRESET_CUSTOMIZE
 import com.hcanyz.environmentvariable.setting.R
 import com.hcanyz.zadapter.ZAdapter
 import com.hcanyz.zadapter.helper.bindZAdapter
+import com.hcanyz.zadapter.hodler.ViewHolderHelper
 import com.hcanyz.zadapter.hodler.ZViewHolder
 import com.hcanyz.zadapter.registry.IHolderCreatorName
 import kotlinx.android.synthetic.main.fragment_ev_switch.*
@@ -48,7 +50,9 @@ class EvSwitchFragment : Fragment() {
             val iEvManager: IEvManager =
                 managerClass.getMethod("getSingleton").invoke(null) as IEvManager
 
-            val list: MutableList<IHolderCreatorName> = iEvManager.getEvHandlers(requireContext())
+            val evHandlers = iEvManager.getEvHandlers(requireContext())
+
+            val list: MutableList<IHolderCreatorName> = evHandlers
                 .flatMap { evHandler ->
                     val allVariantKvs = evHandler.allVariantKvs()
                     val currentVariant = evHandler.currentVariant()
@@ -67,18 +71,68 @@ class EvSwitchFragment : Fragment() {
                     list
                 }.toMutableList()
 
-            val zAdapter = ZAdapter(list)
-            zAdapter.registry
+            val listZAdapter = ZAdapter(list)
+            listZAdapter.registry
                 .registered(EvVariantTitleWrap::class.java.name) { parent: ViewGroup ->
                     return@registered EvVariantTitleHolder(parent)
                 }
-            zAdapter.registry
+            listZAdapter.registry
                 .registered(EvVariantInfoWrap::class.java.name) { parent: ViewGroup ->
                     return@registered EvVariantHolder(parent)
                 }
-            ev_rcy_list.bindZAdapter(zAdapter)
+            ev_rcy_list.bindZAdapter(listZAdapter)
+
+            // 批量切换环境
+            val variantList: MutableList<String> =
+                iEvManager.intersectionVariants.toMutableList()
+            val variantZAdapter =
+                ZAdapter(
+                    variantList,
+                    viewHolderHelper = EvVariantItemViewHolderHelper(
+                        this@EvSwitchFragment
+                    ) { variantName ->
+                        evHandlers.forEach { evHandler ->
+                            evHandler.changeVariant(variantName)
+                            listZAdapter.datas.forEach {
+                                (it as? EvVariantInfoWrap)?.selected =
+                                    (it as? EvVariantInfoWrap)?.variantName == variantName
+                            }
+                            listZAdapter.notifyDataSetChanged()
+                        }
+                    }
+                )
+            variantZAdapter.registry.registered { return@registered "single" }
+            variantZAdapter.registry
+                .registered("single") { parent: ViewGroup ->
+                    return@registered EvVariantItemHolder(parent)
+                }
+            ev_rcy_full_variant.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            ev_rcy_full_variant.adapter = variantZAdapter
         }
     }
+
+    class EvVariantItemHolder(parent: ViewGroup) :
+        ZViewHolder<String>(parent, R.layout.item_ev_variant_horizontal) {
+        private val name by lazy { fv<TextView>(R.id.tv_ev_variant_name) }
+
+        override fun initListener(rootView: View) {
+            super.initListener(rootView)
+            name.setOnClickListener {
+                (mViewHolderHelper as? EvVariantItemViewHolderHelper)?.itemClick?.invoke(mData)
+            }
+        }
+
+        override fun update(data: String, payloads: List<Any>) {
+            super.update(data, payloads)
+            name.text = data
+        }
+    }
+
+    class EvVariantItemViewHolderHelper(
+        fragment: Fragment,
+        val itemClick: (variantName: String) -> Unit
+    ) : ViewHolderHelper(fragment)
 
     class EvVariantInfoWrap(
         val evHandler: EvHandler,
