@@ -3,4 +3,4 @@ include ':compiler'
 include ':base'
 include ':environment-variable'
 include ':app'
-rootProject.name = "environment-variable"
+rootProject.name = "environment-variable-root"
