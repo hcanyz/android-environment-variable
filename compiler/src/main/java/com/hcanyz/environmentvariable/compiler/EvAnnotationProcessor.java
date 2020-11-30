@@ -18,7 +18,6 @@ import com.sun.tools.javac.code.Symbol;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -239,7 +238,9 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .addParameter(ParameterSpec.builder(String.class, "evItemName")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
-                .addCode(CodeBlock.builder().add("return $L.get(EvHandler.Companion.joinVariantValueKey(evItemName, $L.get(evItemName)));", "variantValueMap", "currentVariantMap").build())
+                .addCode(CodeBlock.builder().add("String variant = $L.get(evItemName);", "currentVariantMap").build())
+                .addCode(CodeBlock.builder().add("\n").build())
+                .addCode(CodeBlock.builder().add("return $L.get(EvHandler.Companion.joinVariantValueKey(evItemName, variant != null ? variant : EV_VARIANT_PRESET_DEFAULT));", "variantValueMap").build())
                 .returns(String.class)
                 .build());
 

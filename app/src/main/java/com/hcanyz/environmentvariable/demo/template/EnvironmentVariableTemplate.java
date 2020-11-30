@@ -85,8 +85,8 @@ public final class EnvironmentVariableTemplate implements IEvManager {
 
     @Override
     public String getEvItemCurrentValue(@NonNull String evItemName) {
-        //noinspection ConstantConditions
-        return variantValueMap.get(EvHandler.Companion.joinVariantValueKey(evItemName, currentVariantMap.get(evItemName)));
+        String variant = currentVariantMap.get(evItemName);
+        return variantValueMap.get(EvHandler.Companion.joinVariantValueKey(evItemName, variant != null ? variant : EV_VARIANT_PRESET_DEFAULT));
     }
 
     @Override
