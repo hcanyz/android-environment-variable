@@ -9,4 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface EvGroup {
     String defaultVariant() default "";
+
+    // Used for not wanting to expose too much information
+    boolean hideNonDefault() default false;
 }

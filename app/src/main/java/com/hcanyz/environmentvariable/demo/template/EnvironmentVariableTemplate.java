@@ -9,7 +9,7 @@ import com.hcanyz.environmentvariable.IEvManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +38,7 @@ public final class EnvironmentVariableTemplate implements IEvManager {
 
     public static final String EV_VARIANT_H5BASEURL_TMP = "tmp";
 
-    private final Set<String> intersectionVariants = new HashSet<>();
+    private final Set<String> intersectionVariants = new LinkedHashSet<>();
 
     /**
      * map-key: "$key.$variant"

@@ -7,6 +7,7 @@ public class EvGroupInfo {
     public String name;
     public String packageName;
     public String defaultVariant;
+    public boolean hideNonDefault;
     public final List<EvItemInfo> evItemInfos = new ArrayList<>();
 
     public EvGroupInfo(String name, String packageName) {

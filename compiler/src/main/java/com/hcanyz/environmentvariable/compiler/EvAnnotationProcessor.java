@@ -59,7 +59,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
             Symbol owner = symbol.owner;
             Set<Symbol.ClassSymbol> elements = groupMap.get(owner);
             if (elements == null) {
-                elements = new HashSet<>();
+                elements = new LinkedHashSet<>();
                 groupMap.put(owner, elements);
             }
             elements.add(symbol);
@@ -196,7 +196,9 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 } else {
                     printMessage(Diagnostic.Kind.ERROR, String.format("%s - evGroup defaultVariant invalid,   group:%s,item:%s,variant:%s", TAG, evGroupInfo.name, evItemInfo.name, evVariantInfo.name));
                 }
-                variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariantInfo.value).build());
+                if (!evGroupInfo.hideNonDefault) {
+                    variantValueMapCodeBlocks.add(CodeBlock.builder().add("$L.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_$L, EV_VARIANT_$L_$L), \"$L\");", "variantValueMap", itemNameUpperCase, itemNameUpperCase, evVariantNameUpperCase, evVariantInfo.value).build());
+                }
             }
 
             printMessage(Diagnostic.Kind.NOTE, String.format("%s - defaultValue:%s from:%s,  group:%s,item:%s", TAG, defaultValue, defaultValueFrom, evGroupInfo.name, evItemInfo.name));
@@ -285,6 +287,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
 
         EvGroup evGroupAnnotation = group.getAnnotation(EvGroup.class);
         evGroupInfo.defaultVariant = evGroupAnnotation.defaultVariant();
+        evGroupInfo.hideNonDefault = evGroupAnnotation.hideNonDefault();
 
         for (Symbol.ClassSymbol item : items) {
             String itemName = item.name.toString();

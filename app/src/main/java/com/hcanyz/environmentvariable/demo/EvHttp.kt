@@ -23,7 +23,7 @@ class EvHttp {
         val _customize_: String = "http://172.16.53.1"
     }
 
-    @EvItem(defaultVariant = "uat")
+    @EvItem
     class H5BaseUrl {
 
         @EvVariant(desc = "h5 dev server url")
