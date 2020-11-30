@@ -79,8 +79,10 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     private EnvironmentVariableTemplate() {
     }
 
-    public static EnvironmentVariableTemplate getSingleton() {
-        return Inner.instance;
+    public static EnvironmentVariableTemplate getSingleton(@NonNull Context context) {
+        EnvironmentVariableTemplate instance = Inner.instance;
+        instance.getEvHandlers(context);
+        return instance;
     }
 
     @Override
@@ -95,7 +97,7 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     }
 
     @Override
-    public List<EvHandler> getEvHandlers(@NonNull Context context) {
+    public synchronized List<EvHandler> getEvHandlers(@NonNull Context context) {
         if (evHandlers.isEmpty()) {
             evHandlers.add(new EvHandler(context, EV_ITEM_SERVERURL, currentVariantMap, variantValueMap));
             evHandlers.add(new EvHandler(context, EV_ITEM_H5BASEURL, currentVariantMap, variantValueMap));

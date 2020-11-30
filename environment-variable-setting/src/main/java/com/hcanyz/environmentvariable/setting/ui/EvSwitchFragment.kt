@@ -56,7 +56,8 @@ class EvSwitchFragment : Fragment() {
                 getSerializable("evGroupClass") as Class<IEvManager>
 
             val iEvManager: IEvManager =
-                managerClass.getMethod("getSingleton").invoke(null) as IEvManager
+                managerClass.getMethod("getSingleton", Context::class.java)
+                    .invoke(null, requireContext()) as IEvManager
 
             val evHandlers = iEvManager.getEvHandlers(requireContext())
 

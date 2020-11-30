@@ -97,8 +97,12 @@ public class EvAnnotationProcessor extends AbstractProcessor {
 
         classBuilder.addMethod(MethodSpec.methodBuilder("getSingleton")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ParameterSpec.builder(ClassName.get("android.content", "Context"), "context")
+                        .addAnnotation(ClassName.get("androidx.annotation", "NonNull")).build())
                 .returns(ClassName.get(evGroupInfo.packageName, evGroupName))
-                .addCode("return Inner.instance;")
+                .addCode("$L instance = Inner.instance;\n", evGroupName)
+                .addCode("instance.getEvHandlers(context);\n")
+                .addCode("return instance;")
                 .build());
 
         // static constant group name
@@ -262,7 +266,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         EvHandlersCodeBlocks.add(CodeBlock.builder().add("}").build());
         EvHandlersCodeBlocks.add(CodeBlock.builder().add("return EvHandlers;").build());
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvHandlers")
-                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.PUBLIC, Modifier.SYNCHRONIZED)
                 .addAnnotation(Override.class)
                 .addParameter(ParameterSpec.builder(ClassName.get("android.content", "Context"), "context")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))

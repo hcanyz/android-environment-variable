@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
     fun setting(view: View) {
         Toast.makeText(
             this,
-            EvHttpManager.getSingleton().getEvItemCurrentValue(EvHttpManager.EV_ITEM_SERVERURL),
+            EvHttpManager.getSingleton(this).getEvItemCurrentValue(EvHttpManager.EV_ITEM_SERVERURL),
             Toast.LENGTH_LONG
         ).show()
         EvSwitchActivity.skip(
