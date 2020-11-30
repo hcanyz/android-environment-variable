@@ -13,9 +13,14 @@ import kotlinx.android.synthetic.main.activity_ev_main.*
 class EvSwitchActivity : AppCompatActivity() {
 
     companion object {
-        fun skip(context: Context, evGroupClassList: ArrayList<Class<out IEvManager>>) {
+        fun skip(
+            context: Context,
+            evGroupClassList: ArrayList<Class<out IEvManager>> = arrayListOf(),
+            evGroupClassNameList: ArrayList<String> = arrayListOf()
+        ) {
             context.startActivity(Intent(context, EvSwitchActivity::class.java).apply {
                 putExtra("evGroupClassList", evGroupClassList)
+                putStringArrayListExtra("evGroupClassNameList", evGroupClassNameList)
             })
         }
     }
@@ -28,20 +33,27 @@ class EvSwitchActivity : AppCompatActivity() {
         val lists: ArrayList<Class<IEvManager>> =
             intent.getSerializableExtra("evGroupClassList") as ArrayList<Class<IEvManager>>
 
+        val lists2: ArrayList<String> =
+            intent.getStringArrayListExtra("evGroupClassNameList") as ArrayList<String>
+
+        val data = lists.apply {
+            addAll(lists2.map { Class.forName(it) as Class<IEvManager> })
+        }
+
         ev_viewpager.adapter = object : FragmentStatePagerAdapter(
             supportFragmentManager,
             BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
         ) {
             override fun getCount(): Int {
-                return lists.size
+                return data.size
             }
 
             override fun getItem(position: Int): Fragment {
-                return EvSwitchFragment.newInstance(lists[position])
+                return EvSwitchFragment.newInstance(data[position])
             }
 
             override fun getPageTitle(position: Int): CharSequence? {
-                return lists[position].simpleName
+                return data[position].simpleName
             }
         }
     }
