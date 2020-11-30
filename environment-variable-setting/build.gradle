@@ -1,8 +1,10 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
 }
+
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.hcanyz'
 
 android {
     compileSdkVersion 30
@@ -31,14 +33,17 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
-    implementation 'com.github.hcanyz.ZAdapter:ZAdapter:1.0.3.1'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    api 'com.github.hcanyz.ZAdapter:ZAdapter:1.0.3.1'
+    api 'androidx.recyclerview:recyclerview:1.1.0'
 
     api project(':environment-variable')
 

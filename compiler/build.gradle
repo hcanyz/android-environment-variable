@@ -2,6 +2,9 @@ import org.gradle.internal.jvm.Jvm
 
 apply plugin: 'java-library'
 
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.hcanyz'
+
 dependencies {
     api project(':base')
     api 'com.squareup:javapoet:1.12.1'

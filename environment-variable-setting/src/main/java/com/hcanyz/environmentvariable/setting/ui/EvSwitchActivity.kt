@@ -7,10 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
 import com.hcanyz.environmentvariable.IEvManager
-import com.hcanyz.environmentvariable.setting.R
-import kotlinx.android.synthetic.main.activity_ev_main.*
+import com.hcanyz.environmentvariable.setting.databinding.ActivityEvMainBinding
 
 class EvSwitchActivity : AppCompatActivity() {
+
+    private val evMainBinding by lazy { ActivityEvMainBinding.inflate(layoutInflater) }
 
     companion object {
         fun skip(
@@ -28,7 +29,7 @@ class EvSwitchActivity : AppCompatActivity() {
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_ev_main)
+        setContentView(evMainBinding.root)
 
         val lists: ArrayList<Class<IEvManager>> =
             intent.getSerializableExtra("evGroupClassList") as ArrayList<Class<IEvManager>>
@@ -40,7 +41,7 @@ class EvSwitchActivity : AppCompatActivity() {
             addAll(lists2.map { Class.forName(it) as Class<IEvManager> })
         }
 
-        ev_viewpager.adapter = object : FragmentStatePagerAdapter(
+        evMainBinding.evViewpager.adapter = object : FragmentStatePagerAdapter(
             supportFragmentManager,
             BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
         ) {

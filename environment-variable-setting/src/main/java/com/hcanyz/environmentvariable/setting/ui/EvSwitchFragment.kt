@@ -15,12 +15,12 @@ import com.hcanyz.environmentvariable.EvHandler
 import com.hcanyz.environmentvariable.IEvManager
 import com.hcanyz.environmentvariable.base.EV_VARIANT_PRESET_CUSTOMIZE
 import com.hcanyz.environmentvariable.setting.R
+import com.hcanyz.environmentvariable.setting.databinding.FragmentEvSwitchBinding
 import com.hcanyz.zadapter.ZAdapter
 import com.hcanyz.zadapter.helper.bindZAdapter
 import com.hcanyz.zadapter.hodler.ViewHolderHelper
 import com.hcanyz.zadapter.hodler.ZViewHolder
 import com.hcanyz.zadapter.registry.IHolderCreatorName
-import kotlinx.android.synthetic.main.fragment_ev_switch.*
 
 class EvSwitchFragment : Fragment() {
 
@@ -34,10 +34,18 @@ class EvSwitchFragment : Fragment() {
         }
     }
 
+    private var evMainBinding: FragmentEvSwitchBinding? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_ev_switch, container, false)
+        evMainBinding = FragmentEvSwitchBinding.inflate(inflater, container, false)
+        return evMainBinding?.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        evMainBinding = null
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -80,7 +88,7 @@ class EvSwitchFragment : Fragment() {
                 .registered(EvVariantInfoWrap::class.java.name) { parent: ViewGroup ->
                     return@registered EvVariantHolder(parent)
                 }
-            ev_rcy_list.bindZAdapter(listZAdapter)
+            evMainBinding?.evRcyList?.bindZAdapter(listZAdapter)
 
             // 批量切换环境
             val variantList: MutableList<String> =
@@ -106,9 +114,9 @@ class EvSwitchFragment : Fragment() {
                 .registered("single") { parent: ViewGroup ->
                     return@registered EvVariantItemHolder(parent)
                 }
-            ev_rcy_full_variant.layoutManager =
+            evMainBinding?.evRcyFullVariant?.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            ev_rcy_full_variant.adapter = variantZAdapter
+            evMainBinding?.evRcyFullVariant?.adapter = variantZAdapter
         }
     }
 
