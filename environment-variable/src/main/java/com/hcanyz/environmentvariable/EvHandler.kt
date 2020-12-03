@@ -106,6 +106,7 @@ class EvHandler(
         value: String
     ) {
         sharedPreferences(context).edit()
+            .putString("$key.variant", EV_VARIANT_PRESET_CUSTOMIZE)
             .putString("$key.customizeValue", value)
             .apply()
     }
