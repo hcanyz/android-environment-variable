@@ -1,6 +1,6 @@
-include ':environment-variable-setting'
-include ':compiler'
-include ':base'
-include ':environment-variable'
 include ':app'
-rootProject.name = "environment-variable-root"
+include ':base'
+include ':compiler'
+include ':environment-variable'
+include ':environment-variable-setting'
+rootProject.name = "environment-variable-x"
