@@ -1,4 +1,4 @@
-> 这是一个简单易用的变量管理库，类似[EnvironmentSwitcher](https://github.com/CodeXiaoMai/EnvironmentSwitcher)
+> 这是一个简单易用的变量管理库，类似[EnvironmentSwitcher](https://github.com/CodeXiaoMai/EnvironmentSwitcher)  
 > 知之非艰,行之惟艰。
 
 [![](https://jitpack.io/v/hcanyz/android-environment-variable.svg)](https://jitpack.io/#hcanyz/android-environment-variable)
