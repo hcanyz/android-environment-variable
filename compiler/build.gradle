@@ -9,6 +9,12 @@ dependencies {
     api project(':base')
     api 'com.squareup:javapoet:1.13.0'
 
+    try {
+        // jitpack 不支持 --add-exports jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
+        compileOnly files(Jvm.current().getToolsJar())
+    }catch(ignored){
+    }
+
     //noinspection AnnotationProcessorOnCompilePath
     compileOnly 'com.google.auto.service:auto-service:1.0'
     annotationProcessor 'com.google.auto.service:auto-service:1.0'
