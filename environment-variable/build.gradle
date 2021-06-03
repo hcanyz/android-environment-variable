@@ -8,7 +8,7 @@ group = 'com.github.hcanyz'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         minSdkVersion 21
@@ -37,5 +37,5 @@ android {
 
 dependencies {
     api project(':base')
-    compileOnly 'androidx.annotation:annotation:1.1.0'
+    compileOnly 'androidx.annotation:annotation:1.2.0'
 }

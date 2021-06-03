@@ -7,11 +7,14 @@ group = 'com.github.hcanyz'
 
 dependencies {
     api project(':base')
-    api 'com.squareup:javapoet:1.12.1'
-
-    compileOnly files(Jvm.current().getToolsJar())
+    api 'com.squareup:javapoet:1.13.0'
 
     //noinspection AnnotationProcessorOnCompilePath
-    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
-    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc6'
+    compileOnly 'com.google.auto.service:auto-service:1.0'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
