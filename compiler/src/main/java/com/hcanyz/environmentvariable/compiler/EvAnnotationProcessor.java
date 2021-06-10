@@ -101,7 +101,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull")).build())
                 .returns(ClassName.get(evGroupInfo.packageName, evGroupName))
                 .addCode("$L instance = Inner.instance;\n", evGroupName)
-                .addCode("instance.getEvHandlers(context);\n")
+                .addCode("instance.getEvHandlers(context.getApplicationContext());\n")
                 .addCode("return instance;")
                 .build());
 

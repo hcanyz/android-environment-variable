@@ -59,7 +59,7 @@ class EvSwitchFragment : Fragment() {
                 managerClass.getMethod("getSingleton", Context::class.java)
                     .invoke(null, requireContext()) as IEvManager
 
-            val evHandlers = iEvManager.getEvHandlers(requireContext())
+            val evHandlers = iEvManager.getEvHandlers(requireContext().applicationContext)
 
             val list: MutableList<IHolderCreatorName> = evHandlers
                 .flatMap { evHandler ->

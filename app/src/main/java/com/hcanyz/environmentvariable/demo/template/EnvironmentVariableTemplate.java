@@ -81,7 +81,7 @@ public final class EnvironmentVariableTemplate implements IEvManager {
 
     public static EnvironmentVariableTemplate getSingleton(@NonNull Context context) {
         EnvironmentVariableTemplate instance = Inner.instance;
-        instance.getEvHandlers(context);
+        instance.getEvHandlers(context.getApplicationContext());
         return instance;
     }
 
