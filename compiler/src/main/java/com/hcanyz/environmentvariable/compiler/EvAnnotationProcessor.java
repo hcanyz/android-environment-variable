@@ -151,8 +151,8 @@ public class EvAnnotationProcessor extends AbstractProcessor {
                 .initializer("new $T()", ParameterizedTypeName.get(LinkedHashMap.class, String.class, String.class))
                 .build());
 
-        // EvHandlers
-        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")), "EvHandlers",
+        // evHandlers
+        classBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")), "evHandlers",
                 Modifier.PRIVATE, Modifier.FINAL)
                 .initializer("new $T()", ParameterizedTypeName.get(ClassName.get(ArrayList.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")))
                 .build());
@@ -239,6 +239,7 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvItemCurrentValue")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
+                .addAnnotation(ClassName.get("androidx.annotation", "Nullable"))
                 .addParameter(ParameterSpec.builder(String.class, "evItemName")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
@@ -252,26 +253,28 @@ public class EvAnnotationProcessor extends AbstractProcessor {
         classBuilder.addMethod(MethodSpec.methodBuilder("getIntersectionVariants")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
+                .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                 .addCode(CodeBlock.builder().add("return $L;", "intersectionVariants").build())
                 .returns(ParameterizedTypeName.get(Set.class, String.class))
                 .build());
 
         // method getEvHandlers
-        List<CodeBlock> EvHandlersCodeBlocks = new ArrayList<>();
-        EvHandlersCodeBlocks.add(CodeBlock.builder().add("if (EvHandlers.isEmpty()) {").build());
+        List<CodeBlock> evHandlersCodeBlocks = new ArrayList<>();
+        evHandlersCodeBlocks.add(CodeBlock.builder().add("if (evHandlers.isEmpty()) {").build());
         for (EvGroupInfo.EvItemInfo evItemInfo : evGroupInfo.evItemInfos) {
-            EvHandlersCodeBlocks.add(CodeBlock.builder().add("  EvHandlers.add(new EvHandler(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
+            evHandlersCodeBlocks.add(CodeBlock.builder().add("  evHandlers.add(new EvHandler(context, EV_ITEM_$L, currentVariantMap, variantValueMap));", evItemInfo.name.toUpperCase())
                     .build());
         }
-        EvHandlersCodeBlocks.add(CodeBlock.builder().add("}").build());
-        EvHandlersCodeBlocks.add(CodeBlock.builder().add("return EvHandlers;").build());
+        evHandlersCodeBlocks.add(CodeBlock.builder().add("}").build());
+        evHandlersCodeBlocks.add(CodeBlock.builder().add("return evHandlers;").build());
         classBuilder.addMethod(MethodSpec.methodBuilder("getEvHandlers")
                 .addModifiers(Modifier.PUBLIC, Modifier.SYNCHRONIZED)
                 .addAnnotation(Override.class)
+                .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                 .addParameter(ParameterSpec.builder(ClassName.get("android.content", "Context"), "context")
                         .addAnnotation(ClassName.get("androidx.annotation", "NonNull"))
                         .build())
-                .addCode(CodeBlock.join(EvHandlersCodeBlocks, "\n"))
+                .addCode(CodeBlock.join(evHandlersCodeBlocks, "\n"))
                 .returns(ParameterizedTypeName.get(ClassName.get(List.class), ClassName.get(LIB_PACKAGE_NAME, "EvHandler")))
                 .build());
 

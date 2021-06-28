@@ -3,12 +3,13 @@ package com.hcanyz.environmentvariable.demo.template;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.hcanyz.environmentvariable.EvHandler;
 import com.hcanyz.environmentvariable.IEvManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,42 +23,41 @@ public final class EnvironmentVariableTemplate implements IEvManager {
 
     public static final String EV_ITEM_SERVERURL = "ServerUrl";
 
-    public static final String EV_VARIANT_SERVERURL_DEV = "dev";
+    private static final String EV_VARIANT_SERVERURL_DEV = "dev";
 
-    public static final String EV_VARIANT_SERVERURL_UAT = "uat";
+    private static final String EV_VARIANT_SERVERURL_UAT = "uat";
 
-    public static final String EV_VARIANT_SERVERURL_RELEASE = "release";
+    private static final String EV_VARIANT_SERVERURL_RELEASE = "release";
 
     public static final String EV_ITEM_H5BASEURL = "H5BaseUrl";
 
-    public static final String EV_VARIANT_H5BASEURL_DEV = "dev";
+    private static final String EV_VARIANT_H5BASEURL_DEV = "dev";
 
-    public static final String EV_VARIANT_H5BASEURL_UAT = "uat";
+    private static final String EV_VARIANT_H5BASEURL_UAT = "uat";
 
-    public static final String EV_VARIANT_H5BASEURL_RELEASE = "release";
+    private static final String EV_VARIANT_H5BASEURL_RELEASE = "release";
 
-    public static final String EV_VARIANT_H5BASEURL_TMP = "tmp";
+    private static final String EV_VARIANT_H5BASEURL_TMP = "tmp";
 
-    private final Set<String> intersectionVariants = new LinkedHashSet<>();
-
-    /**
-     * map-key: "$key.$variant"
-     */
-    private final Map<String, String> variantValueMap = new HashMap<>();
+    private final Set<String> intersectionVariants = new LinkedHashSet<String>();
 
     /**
-     * map-key: "$key"
+     * map-key: "$evItemName.$variant"
      */
-    private final Map<String, String> currentVariantMap = new HashMap<>();
+    private final Map<String, String> variantValueMap = new LinkedHashMap<String, String>();
 
-    private final List<EvHandler> evHandlers = new ArrayList<>();
+    /**
+     * map-key: "$evItemName"
+     */
+    private final Map<String, String> currentVariantMap = new LinkedHashMap<String, String>();
+
+    private final List<EvHandler> evHandlers = new ArrayList<EvHandler>();
 
     {
-        intersectionVariants.add(EV_VARIANT_PRESET_DEFAULT);
         intersectionVariants.add("dev");
         intersectionVariants.add("uat");
         intersectionVariants.add("release");
-        intersectionVariants.add("tmp");
+        intersectionVariants.add(EV_VARIANT_PRESET_DEFAULT);
 
 
         variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_SERVERURL, EV_VARIANT_SERVERURL_DEV), "https://dev.hcanyz.com");
@@ -71,7 +71,7 @@ public final class EnvironmentVariableTemplate implements IEvManager {
         variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_UAT), "https://h5-uat.hcanyz.com");
         variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_RELEASE), "https://h5.hcanyz.com");
         variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_H5BASEURL_TMP), "https://h5-tmp.hcanyz.com");
-        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_DEFAULT), "https://h5-uat.hcanyz.com");
+        variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_DEFAULT), "https://h5-dev.hcanyz.com");
         variantValueMap.put(EvHandler.Companion.joinVariantValueKey(EV_ITEM_H5BASEURL, EV_VARIANT_PRESET_CUSTOMIZE), "");
 
     }
@@ -80,23 +80,26 @@ public final class EnvironmentVariableTemplate implements IEvManager {
     }
 
     public static EnvironmentVariableTemplate getSingleton(@NonNull Context context) {
-        EnvironmentVariableTemplate instance = Inner.instance;
+        EnvironmentVariableTemplate instance = EnvironmentVariableTemplate.Inner.instance;
         instance.getEvHandlers(context.getApplicationContext());
         return instance;
     }
 
     @Override
+    @Nullable
     public String getEvItemCurrentValue(@NonNull String evItemName) {
         String variant = currentVariantMap.get(evItemName);
         return variantValueMap.get(EvHandler.Companion.joinVariantValueKey(evItemName, variant != null ? variant : EV_VARIANT_PRESET_DEFAULT));
     }
 
     @Override
+    @NonNull
     public Set<String> getIntersectionVariants() {
         return intersectionVariants;
     }
 
     @Override
+    @NonNull
     public synchronized List<EvHandler> getEvHandlers(@NonNull Context context) {
         if (evHandlers.isEmpty()) {
             evHandlers.add(new EvHandler(context, EV_ITEM_SERVERURL, currentVariantMap, variantValueMap));
